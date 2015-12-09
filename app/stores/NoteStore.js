@@ -9,7 +9,7 @@ class NoteStore {
     this.notes = [];
 
     this.exportPublicMethods({
-      get: this.get.bind(this);
+      get: this.get.bind(this)
     });
   }
 
@@ -42,7 +42,8 @@ class NoteStore {
   }
 
   get(ids = []) {
-    return ids.map(id => this.notes.filter(note => note.id === id));
+    ids = ids.map(id => this.notes.filter(note => note.id === id));
+    return [].concat.apply([], ids);
   }
 
 }

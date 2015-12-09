@@ -1,6 +1,8 @@
 import uuid from "node-uuid";
 import alt from "../libs/alt";
 import LaneActions from "../actions/LaneActions";
+import NoteStore from "./NoteStore"
+
 
 class LaneStore {
   constructor() {
@@ -17,6 +19,24 @@ class LaneStore {
 
     this.setState({
       lanes: lanes.concat(lane)
+    });
+  }
+
+  update({id, name}) {
+    const lanes = this.lanes;
+
+    lanes
+      .filter(lane => lane.id === id)
+      .forEach(lane => {
+        lane.name = name;
+
+        this.setState({lanes});
+      });
+  }
+
+  delete(id) {
+    this.setState({
+      lanes: this.lanes.filter(lane => lane.id !== id)
     });
   }
 
