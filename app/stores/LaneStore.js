@@ -1,8 +1,8 @@
 import uuid from "node-uuid";
 import alt from "../libs/alt";
 import LaneActions from "../actions/LaneActions";
-import NoteStore from "./NoteStore"
-
+import NoteStore from "./NoteStore";
+import update from "react/lib/update";
 
 class LaneStore {
   constructor() {
@@ -39,6 +39,28 @@ class LaneStore {
       lanes: this.lanes.filter(lane => lane.id !== id)
     });
   }
+  
+  move({sourceId, targetId}) {
+    const lanes = this.lanes;
+    const sourceLane = lanes.filter(lane => lane.notes.indexOf(sourceId) >= 0)[0];
+    const targetLane = lanes.filter(lane => lane.notes.indexOf(targetId) >= 0)[0];
+    const sourceNoteIndex = sourceLane.notes.indexOf(sourceId);
+    const targetNoteIndex = targetLane.notes.indexOf(targetId);
+
+    if (sourceLane === targetLane) {
+      sourceLane.notes = update(sourceLane.notes, {
+        $splice: [
+          [sourceNoteIndex, 1],
+          [targetNoteIndex, 0, sourceId]
+        ]
+      });
+    } else {
+      sourceLane.notes.splice(sourceNoteIndex, 1);
+      targetLane.notes.splice(targetNoteIndex, 0, sourceId);
+    }
+
+    this.setState({lanes});
+  }
 
   attachToLane({laneId, noteId}) {
     if (!noteId) {
@@ -47,6 +69,8 @@ class LaneStore {
       noteId = NoteStore.getState().notes.slice(-1)[0].id;
     }
 
+    this.removeNote(noteId);
+
     const lanes = this.lanes;
 
     lanes
@@ -54,7 +78,7 @@ class LaneStore {
       .forEach(lane => {
         lane.notes.push(noteId);
         this.setState({lanes});
-      })
+      });
   }
 
   detachFromLane({laneId, noteId}) {
@@ -66,6 +90,14 @@ class LaneStore {
         lane.notes = lane.notes.filter(note => note.id !== noteId)
 
         this.setState({lanes});
+      });
+  }
+
+  removeNote(noteId) {
+    this.lanes
+      .filter(lane => lane.notes.some(note => note === noteId))
+      .forEach(lane => {
+        lane.notes = lane.notes.filter(note => note !== noteId)
       });
   }
 }
